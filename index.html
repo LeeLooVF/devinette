@@ -11,6 +11,8 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -34,7 +36,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 8px 12px;
+            padding: 10px 14px;
             position: relative;
             gap: 8px;
         }
@@ -51,11 +53,35 @@
         /* En-tête */
         .header {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 2px 0;
+            padding: 4px 2px;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 3px;
+        }
+
+        .top-ten-header-btn {
+            font-size: 0.8rem;
+            color: #818cf8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            padding: 0;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .top-ten-header-btn:hover {
+            color: #a5b4fc;
+            text-decoration: underline;
         }
 
         .level-indicator {
@@ -63,14 +89,18 @@
             color: #9ca3af;
             font-weight: 600;
             background: #1f2937;
-            padding: 4px 10px;
+            padding: 3px 10px;
             border-radius: 20px;
         }
 
         .score-display {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: #34d399;
             font-weight: bold;
+            background: #1f2937;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #374151;
         }
 
         /* Zone d'image compacte */
@@ -168,19 +198,23 @@
         }
 
         button {
-            flex: 1;
             padding: 10px;
             border: none;
             border-radius: 8px;
             font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         .btn-validate {
             background: #2563eb;
             color: white;
+            flex: 1;
         }
 
         .btn-validate:active {
@@ -191,6 +225,7 @@
             background: #059669;
             color: white;
             display: none;
+            flex: 1;
         }
 
         .btn-next:active {
@@ -263,19 +298,25 @@
         .leaderboard-list {
             list-style: none;
             width: 100%;
+            max-height: 220px;
+            overflow-y: auto;
         }
 
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
-            padding: 3px 6px;
+            align-items: center;
+            padding: 6px 10px;
             font-size: 0.85rem;
             border-bottom: 1px solid #374151;
+            background-color: #1a2234;
+            border-radius: 6px;
+            margin-bottom: 4px;
         }
 
-        .leaderboard-item:last-child {
-            border-bottom: none;
-        }
+        .leaderboard-item:nth-child(1) { border-left: 4px solid #fbbf24; }
+        .leaderboard-item:nth-child(2) { border-left: 4px solid #94a3b8; }
+        .leaderboard-item:nth-child(3) { border-left: 4px solid #b45309; }
 
         .btn-restart {
             background: #2563eb;
@@ -288,6 +329,76 @@
             width: 100%;
             margin-top: 4px;
         }
+
+        /* Fenêtre Modale Top 10 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 440px;
+            padding: 22px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            animation: bounceIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.15rem;
+            color: #ffffff;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .btn-close-modal {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            70% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -298,7 +409,10 @@
 
         <!-- En-tête du jeu -->
         <div class="header" id="gameHeader">
-            <div class="level-indicator" id="levelIndicator">Énigme 1 / 10</div>
+            <div class="header-left">
+                <div class="level-indicator" id="levelIndicator">Énigme 1 / 10</div>
+                <button class="top-ten-header-btn" onclick="openLeaderboard(); event.stopPropagation();">🏆 Top 10 des scores</button>
+            </div>
             <div class="score-display">Score : <span id="scoreVal">0</span></div>
         </div>
 
@@ -333,13 +447,27 @@
             </div>
 
             <div class="leaderboard-box">
-                <h3>🏆 Top 5 des Meilleurs Scores</h3>
+                <h3>🏆 Top 10 des Meilleurs Scores</h3>
                 <ul class="leaderboard-list" id="leaderboardList">
                     <li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Chargement...</li>
                 </ul>
             </div>
 
             <button class="btn-restart" onclick="restartGame()">Rejouer</button>
+        </div>
+    </div>
+
+    <!-- MODALE TOP 10 ACCESSIBLE DEPUIS L'EN-TÊTE -->
+    <div id="leaderboard-modal" class="modal hidden" onclick="closeLeaderboard()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>🏆 Top 10 des Meilleurs Scores</h3>
+                <button class="close-modal" onclick="closeLeaderboard()">&times;</button>
+            </div>
+            <ul id="modalLeaderboardList" class="leaderboard-list">
+                <li class="leaderboard-item" style="justify-content:center; color:#9ca3af;">Chargement...</li>
+            </ul>
+            <button class="btn-close-modal" onclick="closeLeaderboard()">Fermer</button>
         </div>
     </div>
 
@@ -379,10 +507,12 @@
         const saveScoreSection = document.getElementById("saveScoreSection");
         const saveScoreBtn = document.getElementById("saveScoreBtn");
         const leaderboardList = document.getElementById("leaderboardList");
+        const modalLeaderboardList = document.getElementById("modalLeaderboardList");
+        const leaderboardModal = document.getElementById("leaderboard-modal");
         const hiddenInput = document.getElementById("hiddenInput");
 
         function keepKeyboardOpen() {
-            if (gameOverScreen.style.display === "flex") return;
+            if (gameOverScreen.style.display === "flex" || !leaderboardModal.classList.contains("hidden")) return;
             hiddenInput.focus();
             window.scrollTo(0, 0);
         }
@@ -566,7 +696,7 @@
         }
 
         async function displayLeaderboard() {
-            leaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Chargement du Top 5...</li>";
+            leaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Chargement du Top 10...</li>";
 
             try {
                 const res = await fetch(API_URL);
@@ -587,6 +717,36 @@
             } catch (err) {
                 leaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#f87171;'>Erreur de chargement</li>";
             }
+        }
+
+        async function openLeaderboard() {
+            modalLeaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Chargement du Top 10...</li>";
+            leaderboardModal.classList.remove('hidden');
+
+            try {
+                const res = await fetch(API_URL);
+                const leaderboard = await res.json();
+                modalLeaderboardList.innerHTML = "";
+
+                if (!leaderboard || leaderboard.length === 0) {
+                    modalLeaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Aucun score enregistré pour l'instant.</li>";
+                    return;
+                }
+
+                leaderboard.forEach((entry, index) => {
+                    const li = document.createElement("li");
+                    li.classList.add("leaderboard-item");
+                    li.innerHTML = `<span>#${index + 1} - <strong>${escapeHtml(entry.name)}</strong></span> <span>${entry.score} / ${levels.length}</span>`;
+                    modalLeaderboardList.appendChild(li);
+                });
+            } catch (err) {
+                modalLeaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#f87171;'>Erreur de chargement des scores.</li>";
+            }
+        }
+
+        function closeLeaderboard() {
+            leaderboardModal.classList.add('hidden');
+            setTimeout(keepKeyboardOpen, 100);
         }
 
         function escapeHtml(text) {
