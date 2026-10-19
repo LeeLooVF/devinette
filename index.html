@@ -103,26 +103,7 @@
             border: 1px solid #374151;
         }
 
-        /* Zone d'image compacte */
-        .image-wrapper {
-            width: 100%;
-            max-width: 380px;
-            max-height: 38vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .image-wrapper img {
-            max-width: 100%;
-            max-height: 38vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            border: 2px solid #374151;
-        }
-
-        /* Zone de saisie / Cases des lettres */
+        /* Cases des lettres */
         .word-container {
             display: flex;
             gap: 6px;
@@ -230,6 +211,25 @@
 
         .btn-next:active {
             background: #047857;
+        }
+
+        /* Zone d'image compacte */
+        .image-wrapper {
+            width: 100%;
+            max-width: 380px;
+            max-height: 38vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-wrapper img {
+            max-width: 100%;
+            max-height: 38vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 2px solid #374151;
         }
 
         /* Écran de fin et Classement */
@@ -416,21 +416,21 @@
             <div class="score-display">Score : <span id="scoreVal">0</span></div>
         </div>
 
-        <!-- Image de l'énigme -->
-        <div class="image-wrapper" id="imageWrapper">
-            <img id="puzzleImage" src="" alt="Énigme">
-        </div>
-
-        <!-- Cases des lettres -->
+        <!-- Cases des lettres (au-dessus de l'image) -->
         <div class="word-container" id="wordContainer"></div>
 
         <!-- Message feedback -->
         <div class="status-message" id="statusMessage"></div>
 
-        <!-- Boutons d'action -->
+        <!-- Boutons d'action (au-dessus de l'image) -->
         <div class="controls" id="controlsArea">
             <button class="btn-validate" id="validateBtn" onclick="validateAnswer(); event.stopPropagation();">Valider</button>
             <button class="btn-next" id="nextBtn" onclick="nextLevel(); event.stopPropagation();">Suivant</button>
+        </div>
+
+        <!-- Image de l'énigme -->
+        <div class="image-wrapper" id="imageWrapper">
+            <img id="puzzleImage" src="" alt="Énigme">
         </div>
 
         <!-- Écran de fin de partie & Classement -->
