@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jeu de Devinettes - Plein Écran & Classement</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            background: #111827;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 12px;
+            position: relative;
+            gap: 8px;
+        }
+
+        /* Input invisible pour forcer le clavier mobile */
+        #hiddenInput {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+        }
+
+        /* En-tête */
+        .header {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px 0;
+        }
+
+        .level-indicator {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-weight: 600;
+            background: #1f2937;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .score-display {
+            font-size: 0.85rem;
+            color: #34d399;
+            font-weight: bold;
+        }
+
+        /* Zone d'image compacte */
+        .image-wrapper {
+            width: 100%;
+            max-width: 380px;
+            max-height: 38vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-wrapper img {
+            max-width: 100%;
+            max-height: 38vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 2px solid #374151;
+        }
+
+        /* Zone de saisie / Cases des lettres */
+        .word-container {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .letter-box {
+            width: 40px;
+            height: 46px;
+            background: #1f2937;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .letter-box.fixed {
+            background: #374151;
+            border-color: #6b7280;
+            color: #d1d5db;
+        }
+
+        .letter-box.input-slot {
+            border-color: #4b5563;
+        }
+
+        .letter-box.filled {
+            border-color: #60a5fa;
+            background: #2563eb;
+        }
+
+        .letter-box.correct {
+            border-color: #34d399;
+            background: #059669;
+            color: white;
+        }
+
+        .letter-box.incorrect {
+            border-color: #f87171;
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Message de statut */
+        .status-message {
+            min-height: 18px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-message.success {
+            color: #34d399;
+        }
+
+        .status-message.error {
+            color: #f87171;
+        }
+
+        /* Contrôles (Boutons) */
+        .controls {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-validate {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-validate:active {
+            background: #1d4ed8;
+        }
+
+        .btn-next {
+            background: #059669;
+            color: white;
+            display: none;
+        }
+
+        .btn-next:active {
+            background: #047857;
+        }
+
+        /* Écran de fin et Classement */
+        .game-over {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .game-over h2 {
+            font-size: 1.6rem;
+            color: #34d399;
+        }
+
+        .game-over p {
+            font-size: 0.95rem;
+            color: #9ca3af;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 9px;
+            border-radius: 8px;
+            border: 2px solid #374151;
+            background: #1f2937;
+            color: white;
+            font-size: 0.95rem;
+            text-align: center;
+            pointer-events: auto !important;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .leaderboard-box {
+            width: 100%;
+            background: #1f2937;
+            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid #374151;
+            margin-top: 4px;
+        }
+
+        .leaderboard-box h3 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: #60a5fa;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            width: 100%;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 6px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .btn-restart {
+            background: #2563eb;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="gameContainer" ontouchstart="keepKeyboardOpen()">
+        <!-- Input caché pour activer le clavier mobile -->
+        <input type="text" id="hiddenInput" autocomplete="off">
+
+        <!-- En-tête du jeu -->
+        <div class="header" id="gameHeader">
+            <div class="level-indicator" id="levelIndicator">Énigme 1 / 10</div>
+            <div class="score-display">Score : <span id="scoreVal">0</span></div>
+        </div>
+
+        <!-- Image de l'énigme -->
+        <div class="image-wrapper" id="imageWrapper">
+            <img id="puzzleImage" src="" alt="Énigme">
+        </div>
+
+        <!-- Cases des lettres -->
+        <div class="word-container" id="wordContainer"></div>
+
+        <!-- Message feedback -->
+        <div class="status-message" id="statusMessage"></div>
+
+        <!-- Boutons d'action -->
+        <div class="controls" id="controlsArea">
+            <button class="btn-validate" id="validateBtn" onclick="validateAnswer(); event.stopPropagation();">Valider</button>
+            <button class="btn-next" id="nextBtn" onclick="nextLevel(); event.stopPropagation();">Suivant</button>
+        </div>
+
+        <!-- Écran de fin de partie & Classement -->
+        <div class="game-over" id="gameOverScreen">
+            <h2>🎉 Partie terminée !</h2>
+            <p>Ton score final : <span id="finalScore">0</span> / 10</p>
+            
+            <div id="saveScoreSection" style="width: 100%;">
+                <p style="margin-bottom: 4px;">Enregistre ton score :</p>
+                <div class="input-group">
+                    <input type="text" id="playerName" placeholder="Ton pseudo" maxlength="12">
+                    <button class="btn-validate" id="saveScoreBtn" onclick="saveScore()" style="flex: 0.6; padding: 8px;">Enregistrer</button>
+                </div>
+            </div>
+
+            <div class="leaderboard-box">
+                <h3>🏆 Top 5 des Meilleurs Scores</h3>
+                <ul class="leaderboard-list" id="leaderboardList">
+                    <li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Chargement...</li>
+                </ul>
+            </div>
+
+            <button class="btn-restart" onclick="restartGame()">Rejouer</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://api-devinettes.kjh27r4i-70a.workers.dev";
+
+        const levels = [
+            { image: "pègre.jpg", word: "PEGRE", pattern: [false, true, true, true, true] },
+            { image: "arbre.jpg", word: "ARBRE", pattern: [true, true, false, false, true] },
+            { image: "juin.jpg", word: "JUIN", pattern: [true, true, true, false] },
+            { image: "navi.jpg", word: "NAVI", pattern: [true, true, false, true] },
+            { image: "rite.jpg", word: "RITE", pattern: [false, true, true, true] },
+            { image: "fiole.jpg", word: "FIOLE", pattern: [true, true, true, false, true] },
+            { image: "noix.jpg", word: "NOIX", pattern: [true, true, true, false] },
+            { image: "nuque.jpg", word: "NUQUE", pattern: [true, false, true, true, true] },
+            { image: "salade.jpg", word: "SALADE", pattern: [true, true, true, false, false, true] },
+            { image: "pote.jpg", word: "POTE", pattern: [true, false, true, true] }
+        ];
+
+        let currentLevel = 0;
+        let score = 0;
+        let userInput = [];
+        let isAnswerChecked = false;
+        let scoreSaved = false;
+
+        const puzzleImage = document.getElementById("puzzleImage");
+        const levelIndicator = document.getElementById("levelIndicator");
+        const scoreVal = document.getElementById("scoreVal");
+        const wordContainer = document.getElementById("wordContainer");
+        const statusMessage = document.getElementById("statusMessage");
+        const validateBtn = document.getElementById("validateBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+        const gameHeader = document.getElementById("gameHeader");
+        const imageWrapper = document.getElementById("imageWrapper");
+        const controlsArea = document.getElementById("controlsArea");
+        const saveScoreSection = document.getElementById("saveScoreSection");
+        const saveScoreBtn = document.getElementById("saveScoreBtn");
+        const leaderboardList = document.getElementById("leaderboardList");
+        const hiddenInput = document.getElementById("hiddenInput");
+
+        function keepKeyboardOpen() {
+            if (gameOverScreen.style.display === "flex") return;
+            hiddenInput.focus();
+            window.scrollTo(0, 0);
+        }
+
+        function initLevel() {
+            isAnswerChecked = false;
+            userInput = [];
+            hiddenInput.value = "";
+            statusMessage.textContent = "";
+            statusMessage.className = "status-message";
+            validateBtn.style.display = "block";
+            nextBtn.style.display = "none";
+
+            const level = levels[currentLevel];
+            puzzleImage.src = level.image;
+            levelIndicator.textContent = `Énigme ${currentLevel + 1} / ${levels.length}`;
+            scoreVal.textContent = score;
+
+            renderWordBoxes();
+            setTimeout(keepKeyboardOpen, 100);
+        }
+
+        function renderWordBoxes() {
+            wordContainer.innerHTML = "";
+            const level = levels[currentLevel];
+            const targetWord = level.word;
+            const pattern = level.pattern;
+            
+            let inputIndex = 0;
+            for (let i = 0; i < targetWord.length; i++) {
+                const box = document.createElement("div");
+                box.classList.add("letter-box");
+
+                if (pattern[i]) {
+                    box.textContent = targetWord[i];
+                    box.classList.add("fixed");
+                } else {
+                    box.classList.add("input-slot");
+                    if (userInput[inputIndex] !== undefined) {
+                        box.textContent = userInput[inputIndex];
+                        box.classList.add("filled");
+                    }
+                    inputIndex++;
+                }
+                wordContainer.appendChild(box);
+            }
+        }
+
+        hiddenInput.addEventListener("input", (e) => {
+            if (gameOverScreen.style.display === "flex" || isAnswerChecked) return;
+
+            const level = levels[currentLevel];
+            const pattern = level.pattern;
+            const totalInputsNeeded = pattern.filter(p => !p).length;
+
+            const val = hiddenInput.value.toUpperCase();
+            userInput = [];
+
+            for (let i = 0; i < val.length && userInput.length < totalInputsNeeded; i++) {
+                const char = val[i];
+                if (char >= 'A' && char <= 'Z') {
+                    userInput.push(char);
+                }
+            }
+
+            renderWordBoxes();
+            window.scrollTo(0, 0);
+        });
+
+        hiddenInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                if (isAnswerChecked && nextBtn.style.display === "block") {
+                    nextLevel();
+                } else {
+                    validateAnswer();
+                }
+            }
+        });
+
+        window.addEventListener("scroll", () => {
+            window.scrollTo(0, 0);
+        });
+
+        function validateAnswer() {
+            if (isAnswerChecked) return;
+
+            const level = levels[currentLevel];
+            const targetWord = level.word;
+            const pattern = level.pattern;
+            const totalInputsNeeded = pattern.filter(p => !p).length;
+
+            if (userInput.length < totalInputsNeeded) {
+                statusMessage.textContent = "Complète tous les caractères !";
+                statusMessage.className = "status-message error";
+                return;
+            }
+
+            isAnswerChecked = true;
+            const boxes = wordContainer.children;
+
+            let fullWordArr = [];
+            let inputIdx = 0;
+            for (let i = 0; i < pattern.length; i++) {
+                if (pattern[i]) {
+                    fullWordArr.push(targetWord[i]);
+                } else {
+                    fullWordArr.push(userInput[inputIdx]);
+                    inputIdx++;
+                }
+            }
+            const userFullWord = fullWordArr.join("");
+
+            if (userFullWord === targetWord) {
+                score++;
+                scoreVal.textContent = score;
+                statusMessage.textContent = "CORRECT ! Bien joué 🎉";
+                statusMessage.className = "status-message success";
+                for (let box of boxes) {
+                    box.classList.add("correct");
+                }
+            } else {
+                statusMessage.textContent = `INCORRECT ! La bonne réponse était : ${targetWord}`;
+                statusMessage.className = "status-message error";
+                for (let i = 0; i < boxes.length; i++) {
+                    boxes[i].textContent = targetWord[i];
+                    boxes[i].className = "letter-box incorrect";
+                }
+            }
+
+            validateBtn.style.display = "none";
+            nextBtn.style.display = "block";
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel < levels.length) {
+                initLevel();
+            } else {
+                showGameOver();
+            }
+        }
+
+        function showGameOver() {
+            gameHeader.style.display = "none";
+            imageWrapper.style.display = "none";
+            wordContainer.style.display = "none";
+            statusMessage.style.display = "none";
+            controlsArea.style.display = "none";
+
+            document.getElementById("finalScore").textContent = score;
+            scoreSaved = false;
+            saveScoreSection.style.display = "block";
+            saveScoreBtn.disabled = false;
+            saveScoreBtn.textContent = "Enregistrer";
+            document.getElementById("playerName").value = "";
+
+            displayLeaderboard();
+            gameOverScreen.style.display = "flex";
+        }
+
+        async function saveScore() {
+            if (scoreSaved) return;
+            const nameInput = document.getElementById("playerName").value.trim() || "Anonyme";
+            
+            saveScoreBtn.disabled = true;
+            saveScoreBtn.textContent = "Envoi...";
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: nameInput, score: score })
+                });
+                scoreSaved = true;
+                saveScoreSection.style.display = "none";
+                displayLeaderboard();
+            } catch (err) {
+                saveScoreBtn.disabled = false;
+                saveScoreBtn.textContent = "Erreur, réessayer";
+            }
+        }
+
+        async function displayLeaderboard() {
+            leaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Chargement du Top 5...</li>";
+
+            try {
+                const res = await fetch(API_URL);
+                const leaderboard = await res.json();
+                leaderboardList.innerHTML = "";
+
+                if (!leaderboard || leaderboard.length === 0) {
+                    leaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#9ca3af;'>Aucun score enregistré</li>";
+                    return;
+                }
+
+                leaderboard.forEach((entry, index) => {
+                    const li = document.createElement("li");
+                    li.classList.add("leaderboard-item");
+                    li.innerHTML = `<span>#${index + 1} - <strong>${escapeHtml(entry.name)}</strong></span> <span>${entry.score} / ${levels.length}</span>`;
+                    leaderboardList.appendChild(li);
+                });
+            } catch (err) {
+                leaderboardList.innerHTML = "<li class='leaderboard-item' style='justify-content:center; color:#f87171;'>Erreur de chargement</li>";
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function restartGame() {
+            currentLevel = 0;
+            score = 0;
+            gameHeader.style.display = "flex";
+            imageWrapper.style.display = "flex";
+            wordContainer.style.display = "flex";
+            statusMessage.style.display = "block";
+            controlsArea.style.display = "flex";
+            gameOverScreen.style.display = "none";
+            initLevel();
+        }
+
+        initLevel();
+    </script>
+</body>
+</html>
